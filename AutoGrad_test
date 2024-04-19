@@ -1,0 +1,22 @@
+import torch
+from torch import autograd as grad
+import torch.nn as nn
+
+
+# Generate random data
+A = torch.randn([3, 3], requires_grad=True)  # Set requires_grad for gradient calculation
+y = torch.randint(0, 3, (3,))
+
+# Calculate softmax probabilities
+X = nn.functional.softmax(A,dim=0)
+
+# Calculate cross-entropy loss
+loss = nn.CrossEntropyLoss()  # InstBantiate the loss function
+loss_value = loss(X, y)  # Calculate loss with predicted probabilities and labels
+
+# Calculate gradient with respect to A
+jac = grad.grad(loss_value, A)
+
+
+print(A, end='\n\n')
+print(jac)
