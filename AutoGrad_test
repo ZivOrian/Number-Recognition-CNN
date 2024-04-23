@@ -2,7 +2,7 @@ import torch
 from torch import autograd as grad
 import torch.nn as nn
 import tensorflow as tf
-
+import time
 
 
 # Generate data (train and test set)
@@ -12,11 +12,13 @@ assert y_train.shape == (60000,)
 assert y_test.shape == (10000,)
 
 W1 = torch.rand([784, 784*20], requires_grad=True,dtype=float)  # Set requires_grad for gradient calculation
+nn.init.xavier_uniform_(W1)
 W2 = torch.rand([784*20, 10], requires_grad=True,dtype=float)
-
+nn.init.xavier_uniform_(W2)
 
 # "for loop" Segment
 
+start_time = time.time()
 # --Init--
 x_i = torch.tensor(x_train[0],dtype=float)
 x_i = torch.flatten(x_i)
@@ -35,7 +37,8 @@ loss = nn.CrossEntropyLoss()  # Instantiate the loss function
 loss_value = loss(y_hat, y)  # Calculate loss with predicted probabilities and labels
 loss_value.backward()
 
+
 # --Test--
 torch.set_printoptions(10)
 print(torch.sum(W1.grad)," , ", torch.sum(W2.grad),end='\n\n')
-print(loss_value)
+print(torch.mean(W1))
