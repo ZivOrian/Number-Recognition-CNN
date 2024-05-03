@@ -1,22 +1,41 @@
 import torch
 from torch import autograd as grad
 import torch.nn as nn
+import tensorflow as tf
 
 
-# Generate random data
-A = torch.randn([3, 3], requires_grad=True)  # Set requires_grad for gradient calculation
-y = torch.randint(0, 3, (3,))
 
-# Calculate softmax probabilities
-X = nn.functional.softmax(A,dim=0)
+# Generate data (train and test set)
+(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+assert x_test.shape == (10000, 28, 28)
+assert y_train.shape == (60000,)
+assert y_test.shape == (10000,)
 
-# Calculate cross-entropy loss
-loss = nn.CrossEntropyLoss()  # InstBantiate the loss function
-loss_value = loss(X, y)  # Calculate loss with predicted probabilities and labels
-
-# Calculate gradient with respect to A
-jac = grad.grad(loss_value, A)
+W1 = torch.rand([784, 784*20], requires_grad=True,dtype=float)  # Set requires_grad for gradient calculation
+W2 = torch.rand([784*20, 10], requires_grad=True,dtype=float)
 
 
-print(A, end='\n\n')
-print(jac)
+# "for loop" Segment
+
+# --Init--
+x_i = torch.tensor(x_train[0],dtype=float)
+x_i = torch.flatten(x_i)
+y = y_train[0]
+y = [1 if i == y-1 else 0 for i in range(10)]
+y = torch.tensor(y,dtype=float)
+
+# --Forward Propagation--
+h1_layer = torch.matmul(torch.t(x_i), W1)
+h1_layer = nn.functional.relu(h1_layer)
+out_layer = torch.matmul(torch.t(h1_layer), W2)
+y_hat = nn.functional.softmax(out_layer, dim=0)
+
+# --Backward Propagtion--
+loss = nn.CrossEntropyLoss()  # Instantiate the loss function
+loss_value = loss(y_hat, y)  # Calculate loss with predicted probabilities and labels
+loss_value.backward()
+
+# --Test--
+torch.set_printoptions(10)
+print(torch.sum(W1.grad)," , ", torch.sum(W2.grad),end='\n\n')
+print(loss_value)
