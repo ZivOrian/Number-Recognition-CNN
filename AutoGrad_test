@@ -5,6 +5,9 @@ import tensorflow as tf
 import time
 import matplotlib.pyplot as plt
 
+
+
+torch.set_printoptions(10)
 # Generate data (train and test set)
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 assert x_test.shape == (10000, 28, 28)
@@ -16,36 +19,43 @@ nn.init.xavier_uniform_(W1)
 W2 = torch.rand([784*20, 10], requires_grad=True,dtype=float)
 nn.init.xavier_uniform_(W2)
 
-# "for loop" Segment
-
+# /\"for loop" Segment/\
 start_time = time.time()
+grad_arr = []
 
 #    -----Init-----
-learn_rate = 0.01
-x_i = torch.tensor(x_train[0],dtype=float)
-x_i = torch.flatten(x_i)
-y = y_train[0]
-y = [1 if i == y-1 else 0 for i in range(10)]
-y = torch.tensor(y,dtype=float)
+for epoch in range(25) :
+    learn_rate = 0.01
+    x_i = torch.tensor(x_test[epoch],dtype=float)
+    x_i = torch.flatten(x_i)
+    y = y_test[epoch]
+    y = [1 if i == y-1 else 0 for i in range(10)]
+    y = torch.tensor(y,dtype=float)
 
-# --Forward Propagation--
-h1_layer = torch.matmul(torch.t(x_i), W1)
-h1_layer = nn.functional.relu(h1_layer)
-out_layer = torch.matmul(torch.t(h1_layer), W2)
-y_hat = nn.functional.softmax(out_layer, dim=0)
+    # --Forward Propagation--
+    h1_layer = torch.matmul(torch.t(x_i), W1)
+    h1_layer = nn.functional.relu(h1_layer)
+    out_layer = torch.matmul(torch.t(h1_layer), W2)
+    y_hat = nn.functional.softmax(out_layer, dim=0)
 
-# --Backward Propagtion--
-loss = nn.CrossEntropyLoss()  # Instantiate the loss function
-loss_value = loss(y_hat, y)  # Calculate loss with predicted probabilities and labels
-loss_value.backward()
+    # --Backward Propagtion--
+    loss = nn.CrossEntropyLoss()  # Instantiate the loss function
+    loss_value = loss(y_hat, y)  # Calculate loss with predicted probabilities and labels
+    loss_value.backward()
 
-wgrad = W2.grad
-W1 = torch.sub(W1, W1.grad, alpha=learn_rate)
-W2 = torch.sub(W2, W2.grad, alpha=learn_rate)
+    W1_update = torch.sub(W1, W1.grad, alpha=learn_rate)
+    W2_update = torch.sub(W2, W2.grad, alpha=learn_rate)
+    grad_arr.append(torch.mean(W1.grad))
+    W1.data = W1_update.data
+    W2.data = W2_update.data
+    
+    W1.grad.zero_()
+    W2.grad.zero_()
+    print(grad_arr[epoch])
+print("\n\n\n", torch.median(torch.tensor(grad_arr)))
 
 
 # --Test--
-torch.set_printoptions(10)
 print(time.time() - start_time,end='\n\nye\n\n ')
-print(wgrad.sum())
-
+plt.plot(grad_arr, '.',color="blue")
+plt.show()
