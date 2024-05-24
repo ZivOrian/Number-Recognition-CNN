@@ -1,0 +1,40 @@
+import torch
+from torch import nn
+import tensorflow as tf  # Use torchvision for MNIST dataset
+
+
+# Define the basic network architecture
+class BasicNet(nn.Module):
+    def __init__(self):
+        super(BasicNet, self).__init__()  # Proper class inheritance
+        self.L1 = nn.Linear(28 * 28, 128)  # Adjust input size to 28x28
+        self.L2 = nn.Linear(128, 10)  # Output layer for 10 classes
+
+    def forward(self, x):
+        x = nn.functional.relu(self.L1(x))
+        x = nn.functional.softmax(self.L2(x), dim=1)
+        return x
+    
+# Initialize weights using Xavier/Kaiming initialization (recommended for ReLU)
+def initialize_weights(m):
+    if isinstance(m, nn.Linear):
+        torch.nn.init.xavier_uniform_(m.weight)  # Xavier initialization for uniform distribution
+
+
+
+if __name__ == '__main__':
+    # Load the MNIST dataset using tf.keras and later translate to a tensor
+    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+
+    # Create an instance of the network
+    net = BasicNet()
+
+    # Apply weight initialization to the network
+    initialize_weights(net)
+
+    input_L = torch.tensor(x_train[0], dtype=torch.float32)
+    input_L = torch.flatten(input_L)
+    
+    net.forward(input_L)
+    # Evaluation loop (implementation omitted for brevity)
+
