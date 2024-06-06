@@ -1,13 +1,5 @@
 import torch
 from torch import nn
-import tensorflow as tf  # Use torchvision for MNIST dataset
- 
-
-# Define the basic network architecture
-class BasicNet(nn.Module):
-    def __init__(self):
-        super(BasicNet, self).__init__()  # Proper cimport torch
-from torch import nn
 from torch import optim
 from torch import autograd as grad
 import tensorflow as tf  # Use torchvision for MNIST dataset
@@ -57,32 +49,4 @@ if __name__ == '__main__':
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-print(grad.grad())lass inheritance
-        self.L1 = nn.Linear(28 * 28, 128)  # Adjust input size to 28x28
-        self.L2 = nn.Linear(128, 10)  # Output layer for 10 classes
-        self.relu = nn.ReLU()
-        self.softmax = nn.Softmax()
-
-    def forward(self, x):
-        x=self.L1(x)
-        x=self.relu(x)
-        x=self.L2(x)
-        x=self.softmax
-        return x
-    
-
-
-if __name__ == '__main__':
-    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-
-    # ---LEARNING LOOP---
-    net = BasicNet()
-    input = torch.tensor(x_train[0],dtype=torch.float32)
-    input = input.flatten()
-
-    print("model paramters:\n\n")
-    for params in net.L1.parameters():
-        print(params)
-
-    print(net.L1, end='\n\n')
-
+print(grad.grad())
