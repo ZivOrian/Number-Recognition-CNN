@@ -3,8 +3,10 @@ from torch import nn
 from torch import optim
 from torch import autograd as grad
 import tensorflow as tf  # Use torchvision for MNIST dataset
-
+import os
 import time
+
+
 
 FILE_PATH = "model.pth"
 
@@ -12,10 +14,10 @@ FILE_PATH = "model.pth"
 class BasicNet(nn.Module):
     def __init__(self):
         super(BasicNet, self).__init__()  # Proper class inheritance
-        self.L1 = nn.Linear(28 * 28, 128)  # Adjust input size to 28x28
+        self.L1 = nn.Linear(28 * 28, 28**2*5)  # Adjust input size to 28x28
         self.relu = nn.ReLU()
         nn.init.kaiming_uniform_(self.L1.weight)
-        self.L2 = nn.Linear(128, 10)  # Output layer for 10 classes
+        self.L2 = nn.Linear(28**2*5, 10)  # Output layer for 10 classes
         self.softmax = nn.Softmax()
         nn.init.xavier_normal_(self.L2.weight)
 
@@ -30,24 +32,31 @@ class BasicNet(nn.Module):
 
 if __name__ == '__main__':
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-    L_rate = 0.01
+    # Hyperparamaeter zone
+    L_rate = 1e-2
+
     # ---LEARNING LOOP--- { 1 iteration }
-    start_time = time.time()    
-    net = BasicNet()
-    # Converting the TF input layer to a tensor of a single dimension
-    inputX = torch.tensor(x_train[0],dtype=torch.float32)
-    inputX = torch.flatten(inputX)
-    targetY = torch.tensor(y_train[0])
-    
-    #initiating the optimization method and the loss function
-    optimizer = optim.SGD(params=net.parameters() ,lr=L_rate, momentum=0.9)# Utilizing momentum for gradient descent
-    loss_func = nn.CrossEntropyLoss()
+    for epoch in range(len(x_train)):
+        start_time = time.time()    
+        net = BasicNet()
+        # Converting the TF input layer to a tensor of a single dimension
+        inputX = torch.tensor(x_train[epoch],dtype=torch.float32)
+        inputX = torch.flatten(inputX)
+        targetY = torch.tensor(y_train[epoch])
+        
+        #initiating the optimization method and the loss function
+        optimizer = optim.SGD(params=net.parameters() ,lr=L_rate, weight_decay=1e-5)# Utilizing momentum for gradient descent
+        loss_func = nn.CrossEntropyLoss()
 
-    pred = net.forward(inputX)
+        pred = net.forward(inputX)
 
-    # ---BackPropagation---
-    loss = loss_func(pred,targetY)
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
-    torch.save(net, FILE_PATH)
+        # ---BackPropagation---
+        
+        loss = loss_func(pred,targetY)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        torch.save(net, FILE_PATH)
+        if epoch%100==0:
+            os.system("cls")
+            print(f"example number {epoch}")
